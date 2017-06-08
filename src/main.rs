@@ -8,14 +8,20 @@ use std::env;
 const ARDUINO_SLAVE_ADDR: u16 = 0x08;
 
 enum ArduinoCommand {
-    LedOn,
-    LedOff,
+    BlinkerOn,
+    BlinkerOff,
 }
 
 fn i2c_master_send(command: ArduinoCommand) -> Result<(), LinuxI2CError> {
     let cmd: u8 = match command {
-        ArduinoCommand::LedOn => { 0x01 },
-        ArduinoCommand::LedOff => { 0x00 },
+        ArduinoCommand::BlinkerOn => {
+            println!("Sending: Blink on");
+            0x01
+        },
+        ArduinoCommand::BlinkerOff => {
+            println!("Sending: Blink off");
+            0x00
+        },
     };
     let mut dev = try!(LinuxI2CDevice::new("/dev/i2c-1", ARDUINO_SLAVE_ADDR));
     dev.smbus_write_byte(cmd).unwrap();
@@ -29,9 +35,9 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let command = &args[1];
     let i2c_cmd = match &command[..] {
-        "on" => { ArduinoCommand::LedOn },
-        "off" => { ArduinoCommand::LedOff },
-        _ => { ArduinoCommand::LedOff },
+        "on" => { ArduinoCommand::BlinkerOn },
+        "off" => { ArduinoCommand::BlinkerOff },
+        _ => { ArduinoCommand::BlinkerOff },
     };
     i2c_master_send(i2c_cmd).unwrap()
 }
